@@ -2,7 +2,7 @@ import "./style.css";
 
 const app: HTMLDivElement = document.querySelector("#app")!;
 
-const gameName = "Nick's game";
+const gameName = "Nick's drawing game";
 
 document.title = gameName;
 
