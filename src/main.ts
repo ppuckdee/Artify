@@ -28,16 +28,18 @@ function createStyledCanvas() {
     return;
   }
 
-  let drawing = false;
+  let isDrawing = false;
   let points: { x: number; y: number }[] = [];
+  let displayList: { x: number; y: number }[][] = [];
+  let redoStack: { x: number; y: number }[][] = [];
 
   canvas.addEventListener("mousedown", () => {
-    drawing = true;
+    isDrawing = true;
     points = [];
   });
 
   canvas.addEventListener("mousemove", (e) => {
-    if (!drawing) return;
+    if (!isDrawing) return;
     points.push({
       x: e.clientX - canvas.offsetLeft,
       y: e.clientY - canvas.offsetTop,
@@ -46,11 +48,19 @@ function createStyledCanvas() {
   });
 
   canvas.addEventListener("mouseup", () => {
-    drawing = false;
+    if (isDrawing) {
+      isDrawing = false;
+      displayList.push([...points]);
+      redoStack = [];
+    }
   });
 
   canvas.addEventListener("mouseout", () => {
-    drawing = false;
+    if (isDrawing) {
+      isDrawing = false;
+      displayList.push([...points]);
+      redoStack = [];
+    }
   });
 
   canvas.addEventListener("drawing-changed", () => {
@@ -71,9 +81,50 @@ function createStyledCanvas() {
   clearButton.addEventListener("click", () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
     points = [];
+    displayList = [];
+    redoStack = [];
+  });
+
+  const undoButton = document.createElement("button");
+  undoButton.innerText = "Undo";
+  undoButton.addEventListener("click", () => {
+    if (displayList.length > 0) {
+      const lastDrawing = displayList.pop()!;
+      redoStack.push(lastDrawing);
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      redrawCanvas(context, displayList);
+    }
+  });
+
+  const redoButton = document.createElement("button");
+  redoButton.innerText = "Redo";
+  redoButton.addEventListener("click", () => {
+    if (redoStack.length > 0) {
+      const nextDrawing = redoStack.pop()!;
+      displayList.push(nextDrawing);
+      redrawCanvas(context, displayList);
+    }
   });
 
   app.appendChild(clearButton);
+  app.appendChild(undoButton);
+  app.appendChild(redoButton);
+}
+
+function redrawCanvas(
+  context: CanvasRenderingContext2D,
+  drawings: { x: number; y: number }[][]
+) {
+  context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
+  for (const drawing of drawings) {
+    for (let i = 1; i < drawing.length; i++) {
+      context.beginPath();
+      context.moveTo(drawing[i - 1].x, drawing[i - 1].y);
+      context.lineTo(drawing[i].x, drawing[i].y);
+      context.stroke();
+    }
+  }
 }
 
 createStyledCanvas();
