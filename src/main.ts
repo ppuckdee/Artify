@@ -29,19 +29,20 @@ function createStyledCanvas() {
   }
 
   let drawing = false;
+  let points: { x: number; y: number }[] = [];
 
   canvas.addEventListener("mousedown", () => {
     drawing = true;
-    context.beginPath();
+    points = [];
   });
 
   canvas.addEventListener("mousemove", (e) => {
     if (!drawing) return;
-    context.lineWidth = 2;
-    context.lineCap = "round";
-    context.strokeStyle = "black";
-    context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
-    context.stroke();
+    points.push({
+      x: e.clientX - canvas.offsetLeft,
+      y: e.clientY - canvas.offsetTop,
+    });
+    canvas.dispatchEvent(new Event("drawing-changed"));
   });
 
   canvas.addEventListener("mouseup", () => {
@@ -52,11 +53,26 @@ function createStyledCanvas() {
     drawing = false;
   });
 
-  // Clear button
+  canvas.addEventListener("drawing-changed", () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    context.lineWidth = 2;
+    context.lineCap = "round";
+    context.strokeStyle = "black";
+
+    for (let i = 1; i < points.length; i++) {
+      context.beginPath();
+      context.moveTo(points[i - 1].x, points[i - 1].y);
+      context.lineTo(points[i].x, points[i].y);
+      context.stroke();
+    }
+  });
+
   const clearButton = document.createElement("button");
   clearButton.innerText = "Clear";
   clearButton.addEventListener("click", () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
+    points = [];
   });
 
   app.appendChild(clearButton);
