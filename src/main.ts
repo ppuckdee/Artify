@@ -54,8 +54,6 @@ function createStyledCanvas() {
   });
 
   canvas.addEventListener("drawing-changed", () => {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-
     context.lineWidth = 2;
     context.lineCap = "round";
     context.strokeStyle = "black";
