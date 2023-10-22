@@ -36,6 +36,7 @@ function createStyledCanvas() {
   canvas.addEventListener("mousedown", () => {
     isDrawing = true;
     points = [];
+    canvas.dispatchEvent(new Event("drawing-changed"));
   });
 
   canvas.addEventListener("mousemove", (e) => {
@@ -52,6 +53,7 @@ function createStyledCanvas() {
       isDrawing = false;
       displayList.push([...points]);
       redoStack = [];
+      canvas.dispatchEvent(new Event("drawing-changed"));
     }
   });
 
@@ -60,6 +62,7 @@ function createStyledCanvas() {
       isDrawing = false;
       displayList.push([...points]);
       redoStack = [];
+      canvas.dispatchEvent(new Event("drawing-changed"));
     }
   });
 
@@ -83,6 +86,7 @@ function createStyledCanvas() {
     points = [];
     displayList = [];
     redoStack = [];
+    canvas.dispatchEvent(new Event("drawing-changed"));
   });
 
   const undoButton = document.createElement("button");
@@ -92,7 +96,12 @@ function createStyledCanvas() {
       const lastDrawing = displayList.pop()!;
       redoStack.push(lastDrawing);
       context.clearRect(0, 0, canvas.width, canvas.height);
+      points = [];
+      for (const drawing of displayList) {
+        points = points.concat(drawing);
+      }
       redrawCanvas(context, displayList);
+      canvas.dispatchEvent(new Event("drawing-changed"));
     }
   });
 
@@ -103,6 +112,7 @@ function createStyledCanvas() {
       const nextDrawing = redoStack.pop()!;
       displayList.push(nextDrawing);
       redrawCanvas(context, displayList);
+      canvas.dispatchEvent(new Event("drawing-changed"));
     }
   });
 
