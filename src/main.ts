@@ -45,6 +45,28 @@ class DrawingCanvas {
 
 const drawingCanvases: DrawingCanvas[] = [];
 
+class ToolPreview {
+  x: number;
+  y: number;
+  radius: number;
+
+  constructor(x: number, y: number, radius: number) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+  }
+
+  draw(context: CanvasRenderingContext2D) {
+    context.lineWidth = this.radius;
+    context.strokeStyle = "black";
+    context.beginPath();
+    context.arc(this.x, this.y, this.radius / 2, 0, Math.PI * 2);
+    context.stroke();
+  }
+}
+
+let toolPreview: ToolPreview | null = null;
+
 function createStyledCanvas() {
   const canvas = document.createElement("canvas");
   canvas.width = 256;
@@ -106,6 +128,47 @@ function createStyledCanvas() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     for (const canvas of drawingCanvases) {
       canvas.display(context);
+    }
+  });
+
+  canvas.addEventListener("mousemove", (e) => {
+    if (!isDrawing) {
+      const x = e.clientX - canvas.offsetLeft;
+      const y = e.clientY - canvas.offsetTop;
+
+      if (toolPreview) {
+        toolPreview.x = x;
+        toolPreview.y = y;
+      } else {
+        toolPreview = new ToolPreview(x, y, lineThickness);
+      }
+
+      canvas.dispatchEvent(new Event("tool-moved"));
+    }
+  });
+
+  canvas.addEventListener("mousedown", (e) => {
+    isDrawing = true;
+    currentCanvas = new DrawingCanvas(
+      e.clientX - canvas.offsetLeft,
+      e.clientY - canvas.offsetTop,
+      lineThickness
+    );
+    drawingCanvases.push(currentCanvas);
+    lineThicknessHistory.push(lineThickness);
+    canvas.dispatchEvent(drawingChanged);
+  });
+
+  canvas.addEventListener("tool-moved", () => {
+    if (!isDrawing) {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      for (const canvas of drawingCanvases) {
+        canvas.display(context);
+      }
+
+      if (toolPreview) {
+        toolPreview.draw(context);
+      }
     }
   });
 
