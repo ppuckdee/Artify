@@ -10,6 +10,32 @@ const header = document.createElement("h1");
 header.innerHTML = gameName;
 app.appendChild(header);
 
+class DrawingCanvas {
+  points: { x: number; y: number }[];
+  constructor(x: number, y: number) {
+    this.points = [{ x, y }];
+  }
+  addPoint(x: number, y: number) {
+    this.points.push({ x, y });
+  }
+  display(context: CanvasRenderingContext2D) {
+    if (this.points.length < 2) {
+      return;
+    }
+    context.lineWidth = 2;
+    context.lineCap = "round";
+    context.strokeStyle = "black";
+    context.beginPath();
+    context.moveTo(this.points[0].x, this.points[0].y);
+    for (let i = 1; i < this.points.length; i++) {
+      context.lineTo(this.points[i].x, this.points[i].y);
+    }
+    context.stroke();
+  }
+}
+
+const drawingCanvases: DrawingCanvas[] = [];
+
 function createStyledCanvas() {
   const canvas = document.createElement("canvas");
   canvas.width = 256;
@@ -29,53 +55,42 @@ function createStyledCanvas() {
   }
 
   let isDrawing = false;
-  let points: { x: number; y: number }[] = [];
-  let displayList: { x: number; y: number }[][] = [];
-  let redoStack: { x: number; y: number }[][] = [];
+  let currentCanvas: DrawingCanvas | null = null;
+  let redoStack: DrawingCanvas[] = [];
 
-  canvas.addEventListener("mousedown", () => {
+  const drawingChanged = new CustomEvent("drawing-changed");
+
+  canvas.addEventListener("mousedown", (e) => {
     isDrawing = true;
-    points = [];
-    canvas.dispatchEvent(new Event("drawing-changed"));
+    currentCanvas = new DrawingCanvas(
+      e.clientX - canvas.offsetLeft,
+      e.clientY - canvas.offsetTop
+    );
+    drawingCanvases.push(currentCanvas);
+    canvas.dispatchEvent(drawingChanged);
   });
 
   canvas.addEventListener("mousemove", (e) => {
-    if (!isDrawing) return;
-    points.push({
-      x: e.clientX - canvas.offsetLeft,
-      y: e.clientY - canvas.offsetTop,
-    });
-    canvas.dispatchEvent(new Event("drawing-changed"));
+    if (!isDrawing || !currentCanvas) return;
+    currentCanvas.addPoint(
+      e.clientX - canvas.offsetLeft,
+      e.clientY - canvas.offsetTop
+    );
+    canvas.dispatchEvent(drawingChanged);
   });
 
   canvas.addEventListener("mouseup", () => {
-    if (isDrawing) {
-      isDrawing = false;
-      displayList.push([...points]);
-      redoStack = [];
-      canvas.dispatchEvent(new Event("drawing-changed"));
-    }
+    isDrawing = false;
   });
 
   canvas.addEventListener("mouseout", () => {
-    if (isDrawing) {
-      isDrawing = false;
-      displayList.push([...points]);
-      redoStack = [];
-      canvas.dispatchEvent(new Event("drawing-changed"));
-    }
+    isDrawing = false;
   });
 
   canvas.addEventListener("drawing-changed", () => {
-    context.lineWidth = 2;
-    context.lineCap = "round";
-    context.strokeStyle = "black";
-
-    for (let i = 1; i < points.length; i++) {
-      context.beginPath();
-      context.moveTo(points[i - 1].x, points[i - 1].y);
-      context.lineTo(points[i].x, points[i].y);
-      context.stroke();
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    for (const canvas of drawingCanvases) {
+      canvas.display(context);
     }
   });
 
@@ -83,25 +98,19 @@ function createStyledCanvas() {
   clearButton.innerText = "Clear";
   clearButton.addEventListener("click", () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    points = [];
-    displayList = [];
+    drawingCanvases.length = 0;
     redoStack = [];
-    canvas.dispatchEvent(new Event("drawing-changed"));
+    canvas.dispatchEvent(drawingChanged);
   });
 
   const undoButton = document.createElement("button");
   undoButton.innerText = "Undo";
   undoButton.addEventListener("click", () => {
-    if (displayList.length > 0) {
-      const lastDrawing = displayList.pop()!;
+    if (drawingCanvases.length > 0) {
+      const lastDrawing = drawingCanvases.pop()!;
       redoStack.push(lastDrawing);
       context.clearRect(0, 0, canvas.width, canvas.height);
-      points = [];
-      for (const drawing of displayList) {
-        points = points.concat(drawing);
-      }
-      redrawCanvas(context, displayList);
-      canvas.dispatchEvent(new Event("drawing-changed"));
+      canvas.dispatchEvent(drawingChanged);
     }
   });
 
@@ -110,31 +119,14 @@ function createStyledCanvas() {
   redoButton.addEventListener("click", () => {
     if (redoStack.length > 0) {
       const nextDrawing = redoStack.pop()!;
-      displayList.push(nextDrawing);
-      redrawCanvas(context, displayList);
-      canvas.dispatchEvent(new Event("drawing-changed"));
+      drawingCanvases.push(nextDrawing);
+      canvas.dispatchEvent(drawingChanged);
     }
   });
 
   app.appendChild(clearButton);
   app.appendChild(undoButton);
   app.appendChild(redoButton);
-}
-
-function redrawCanvas(
-  context: CanvasRenderingContext2D,
-  drawings: { x: number; y: number }[][]
-) {
-  context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-
-  for (const drawing of drawings) {
-    for (let i = 1; i < drawing.length; i++) {
-      context.beginPath();
-      context.moveTo(drawing[i - 1].x, drawing[i - 1].y);
-      context.lineTo(drawing[i].x, drawing[i].y);
-      context.stroke();
-    }
-  }
 }
 
 createStyledCanvas();
