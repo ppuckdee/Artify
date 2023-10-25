@@ -13,11 +13,13 @@ app.appendChild(header);
 class DrawingCanvas {
   points: { x: number; y: number }[];
   thickness: number;
+  lineSymbol: string;
   stickers: Sticker[];
 
   constructor(x: number, y: number, thickness: number) {
     this.points = [{ x, y }];
     this.thickness = thickness;
+    this.lineSymbol = "black";
     this.stickers = [];
   }
 
@@ -31,7 +33,7 @@ class DrawingCanvas {
     }
     context.lineWidth = this.thickness;
     context.lineCap = "round";
-    context.strokeStyle = "black";
+    context.strokeStyle = this.lineSymbol;
     context.beginPath();
     context.moveTo(this.points[0].x, this.points[0].y);
     for (let i = 1; i < this.points.length; i++) {
@@ -44,6 +46,10 @@ class DrawingCanvas {
 
   setThickness(thickness: number) {
     this.thickness = thickness;
+  }
+
+  setLineSymbol(symbol: string) {
+    this.lineSymbol = symbol;
   }
 
   addSticker(x: number, y: number, sticker: string) {
@@ -146,6 +152,9 @@ function createStyledCanvas() {
     } else {
       stickerPreview = new StickerPreview(0, 0, "😀");
     }
+    if (currentCanvas) {
+      currentCanvas.setLineSymbol("😀");
+    }
     canvas.dispatchEvent(new Event("tool-moved"));
   });
 
@@ -158,6 +167,9 @@ function createStyledCanvas() {
     } else {
       stickerPreview = new StickerPreview(0, 0, "😩");
     }
+    if (currentCanvas) {
+      currentCanvas.setLineSymbol("😩");
+    }
     canvas.dispatchEvent(new Event("tool-moved"));
   });
 
@@ -168,6 +180,9 @@ function createStyledCanvas() {
       stickerPreview.sticker = "🫠";
     } else {
       stickerPreview = new StickerPreview(0, 0, "🫠");
+    }
+    if (currentCanvas) {
+      currentCanvas.setLineSymbol("🫠");
     }
     canvas.dispatchEvent(new Event("tool-moved"));
   });
@@ -220,8 +235,8 @@ function createStyledCanvas() {
 
   canvas.addEventListener("drawing-changed", () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    for (const canvas of drawingCanvases) {
-      canvas.display(context);
+    for (const canvasObj of drawingCanvases) {
+      canvasObj.display(context);
     }
   });
 
@@ -243,16 +258,16 @@ function createStyledCanvas() {
 
   canvas.addEventListener("tool-moved", () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    for (const canvas of drawingCanvases) {
-      canvas.display(context);
+
+    for (const canvasObj of drawingCanvases) {
+      canvasObj.display(context);
+      for (const sticker of canvasObj.stickers) {
+        sticker.draw(context);
+      }
     }
 
     if (toolPreview) {
       toolPreview.draw(context, lineThickness);
-    }
-
-    for (const sticker of currentCanvas?.stickers ?? []) {
-      sticker.draw(context);
     }
 
     if (stickerPreview) {
@@ -261,13 +276,11 @@ function createStyledCanvas() {
   });
 
   canvas.addEventListener("click", (e) => {
-    if (stickerPreview) {
+    if (stickerPreview && currentCanvas) {
       const x = e.clientX - canvas.offsetLeft;
       const y = e.clientY - canvas.offsetTop;
-      if (currentCanvas) {
-        currentCanvas.addSticker(x, y, stickerPreview.sticker);
-        canvas.dispatchEvent(new Event("tool-moved"));
-      }
+      currentCanvas.addSticker(x, y, stickerPreview.sticker);
+      canvas.dispatchEvent(new Event("tool-moved"));
     }
   });
 
