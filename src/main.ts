@@ -109,7 +109,6 @@ function createStyledCanvas() {
     if (drawingCanvases.length > 0) {
       const lastDrawing = drawingCanvases.pop()!;
       redoStack.push(lastDrawing);
-      context.clearRect(0, 0, canvas.width, canvas.height);
       canvas.dispatchEvent(drawingChanged);
     }
   });
