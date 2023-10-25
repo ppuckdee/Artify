@@ -225,6 +225,9 @@ function createStyledCanvas() {
       if (toolPreview) {
         toolPreview.x = x;
         toolPreview.y = y;
+      } else if (stickerPreview) {
+        stickerPreview.x = x;
+        stickerPreview.y = y;
       } else {
         toolPreview = new ToolPreview(x, y, lineThickness);
       }
@@ -234,18 +237,31 @@ function createStyledCanvas() {
   });
 
   canvas.addEventListener("tool-moved", () => {
-    if (!isDrawing) {
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      for (const canvas of drawingCanvases) {
-        canvas.display(context);
-      }
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    for (const canvas of drawingCanvases) {
+      canvas.display(context);
+    }
 
-      if (toolPreview) {
-        toolPreview.draw(context, lineThickness);
-      }
+    if (toolPreview) {
+      toolPreview.draw(context, lineThickness);
+    }
 
-      for (const sticker of currentCanvas?.stickers ?? []) {
-        sticker.draw(context);
+    for (const sticker of currentCanvas?.stickers ?? []) {
+      sticker.draw(context);
+    }
+
+    if (stickerPreview) {
+      stickerPreview.draw(context);
+    }
+  });
+
+  canvas.addEventListener("click", (e) => {
+    if (stickerPreview) {
+      const x = e.clientX - canvas.offsetLeft;
+      const y = e.clientY - canvas.offsetTop;
+      if (currentCanvas) {
+        currentCanvas.addSticker(x, y, stickerPreview.sticker);
+        canvas.dispatchEvent(new Event("tool-moved"));
       }
     }
   });
