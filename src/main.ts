@@ -56,11 +56,11 @@ class ToolPreview {
     this.radius = radius;
   }
 
-  draw(context: CanvasRenderingContext2D) {
-    context.lineWidth = this.radius;
+  draw(context: CanvasRenderingContext2D, thickness: number) {
+    context.lineWidth = thickness;
     context.strokeStyle = "black";
     context.beginPath();
-    context.arc(this.x, this.y, this.radius / 2, 0, Math.PI * 2);
+    context.arc(this.x, this.y, thickness / 2, 0, Math.PI * 2);
     context.stroke();
   }
 }
@@ -167,7 +167,7 @@ function createStyledCanvas() {
       }
 
       if (toolPreview) {
-        toolPreview.draw(context);
+        toolPreview.draw(context, lineThickness);
       }
     }
   });
