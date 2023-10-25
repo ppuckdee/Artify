@@ -163,6 +163,14 @@ function createStyledCanvas() {
 
   const stickerButton3 = document.createElement("button");
   stickerButton3.innerText = "🫠";
+  stickerButton3.addEventListener("click", () => {
+    if (stickerPreview) {
+      stickerPreview.sticker = "🫠";
+    } else {
+      stickerPreview = new StickerPreview(0, 0, "🫠");
+    }
+    canvas.dispatchEvent(new Event("tool-moved"));
+  });
 
   app.appendChild(stickerButton1);
   app.appendChild(stickerButton2);
