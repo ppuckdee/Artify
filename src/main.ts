@@ -12,17 +12,22 @@ app.appendChild(header);
 
 class DrawingCanvas {
   points: { x: number; y: number }[];
-  constructor(x: number, y: number) {
+  thickness: number;
+
+  constructor(x: number, y: number, thickness: number) {
     this.points = [{ x, y }];
+    this.thickness = thickness;
   }
+
   addPoint(x: number, y: number) {
     this.points.push({ x, y });
   }
+
   display(context: CanvasRenderingContext2D) {
     if (this.points.length < 2) {
       return;
     }
-    context.lineWidth = 2;
+    context.lineWidth = this.thickness;
     context.lineCap = "round";
     context.strokeStyle = "black";
     context.beginPath();
@@ -31,6 +36,10 @@ class DrawingCanvas {
       context.lineTo(this.points[i].x, this.points[i].y);
     }
     context.stroke();
+  }
+
+  setThickness(thickness: number) {
+    this.thickness = thickness;
   }
 }
 
@@ -62,11 +71,14 @@ function createStyledCanvas() {
 
   canvas.addEventListener("mousedown", (e) => {
     isDrawing = true;
+    const thickness = currentCanvas ? currentCanvas.thickness : 2;
     currentCanvas = new DrawingCanvas(
       e.clientX - canvas.offsetLeft,
-      e.clientY - canvas.offsetTop
+      e.clientY - canvas.offsetTop,
+      thickness
     );
     drawingCanvases.push(currentCanvas);
+    context.lineWidth = thickness;
     canvas.dispatchEvent(drawingChanged);
   });
 
@@ -123,9 +135,27 @@ function createStyledCanvas() {
     }
   });
 
+  const thinButton = document.createElement("button");
+  thinButton.innerText = "Thin";
+  thinButton.addEventListener("click", () => {
+    if (currentCanvas) {
+      currentCanvas.setThickness(1);
+    }
+  });
+
+  const thickButton = document.createElement("button");
+  thickButton.innerText = "Thick";
+  thickButton.addEventListener("click", () => {
+    if (currentCanvas) {
+      currentCanvas.setThickness(7);
+    }
+  });
+
   app.appendChild(clearButton);
   app.appendChild(undoButton);
   app.appendChild(redoButton);
+  app.appendChild(thinButton);
+  app.appendChild(thickButton);
 }
 
 createStyledCanvas();
