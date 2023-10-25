@@ -140,41 +140,41 @@ function createStyledCanvas() {
   const stickerButton1 = document.createElement("button");
   stickerButton1.innerText = "😀";
   stickerButton1.addEventListener("click", () => {
-    stickerPreview = new StickerPreview(0, 0, "😀");
+    if (stickerPreview) {
+      stickerPreview.sticker = "😀";
+      toolPreview = null;
+    } else {
+      stickerPreview = new StickerPreview(0, 0, "😀");
+    }
     canvas.dispatchEvent(new Event("tool-moved"));
   });
 
   const stickerButton2 = document.createElement("button");
   stickerButton2.innerText = "😩";
   stickerButton2.addEventListener("click", () => {
-    stickerPreview = new StickerPreview(0, 0, "😩");
+    if (stickerPreview) {
+      stickerPreview.sticker = "😩";
+      toolPreview = null;
+    } else {
+      stickerPreview = new StickerPreview(0, 0, "😩");
+    }
     canvas.dispatchEvent(new Event("tool-moved"));
   });
 
   const stickerButton3 = document.createElement("button");
   stickerButton3.innerText = "🫠";
-  stickerButton3.addEventListener("click", () => {
-    stickerPreview = new StickerPreview(0, 0, "🫠");
-    canvas.dispatchEvent(new Event("tool-moved"));
-  });
 
   app.appendChild(stickerButton1);
   app.appendChild(stickerButton2);
   app.appendChild(stickerButton3);
 
-  if (stickerPreview) {
-    console.log(stickerPreview.sticker);
-  }
-
   canvas.addEventListener("mousemove", (e) => {
-    if (!isDrawing) {
+    if (stickerPreview) {
       const x = e.clientX - canvas.offsetLeft;
       const y = e.clientY - canvas.offsetTop;
-
-      if (toolPreview) {
-        toolPreview.x = x;
-        toolPreview.y = y;
-      }
+      stickerPreview.x = x;
+      stickerPreview.y = y;
+      canvas.dispatchEvent(new Event("tool-moved"));
     }
   });
 
@@ -225,9 +225,6 @@ function createStyledCanvas() {
       if (toolPreview) {
         toolPreview.x = x;
         toolPreview.y = y;
-      } else if (stickerPreview) {
-        stickerPreview.x = x;
-        stickerPreview.y = y;
       } else {
         toolPreview = new ToolPreview(x, y, lineThickness);
       }
@@ -299,12 +296,20 @@ function createStyledCanvas() {
   thinButton.innerText = "Thin";
   thinButton.addEventListener("click", () => {
     lineThickness = 1;
+    if (stickerPreview) {
+      stickerPreview = null;
+    }
+    canvas.dispatchEvent(new Event("tool-moved"));
   });
 
   const thickButton = document.createElement("button");
   thickButton.innerText = "Thick";
   thickButton.addEventListener("click", () => {
     lineThickness = 7;
+    if (stickerPreview) {
+      stickerPreview = null;
+    }
+    canvas.dispatchEvent(new Event("tool-moved"));
   });
 
   app.appendChild(clearButton);
