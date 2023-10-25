@@ -13,10 +13,12 @@ app.appendChild(header);
 class DrawingCanvas {
   points: { x: number; y: number }[];
   thickness: number;
+  stickers: Sticker[];
 
   constructor(x: number, y: number, thickness: number) {
     this.points = [{ x, y }];
     this.thickness = thickness;
+    this.stickers = [];
   }
 
   addPoint(x: number, y: number) {
@@ -36,10 +38,17 @@ class DrawingCanvas {
       context.lineTo(this.points[i].x, this.points[i].y);
     }
     context.stroke();
+
+    this.stickers.forEach((sticker) => sticker.draw(context));
   }
 
   setThickness(thickness: number) {
     this.thickness = thickness;
+  }
+
+  addSticker(x: number, y: number, sticker: string) {
+    const stickerObj = new Sticker(x, y, sticker);
+    this.stickers.push(stickerObj);
   }
 }
 
@@ -65,6 +74,40 @@ class ToolPreview {
   }
 }
 
+class Sticker {
+  x: number;
+  y: number;
+  sticker: string;
+
+  constructor(x: number, y: number, sticker: string) {
+    this.x = x;
+    this.y = y;
+    this.sticker = sticker;
+  }
+
+  draw(context: CanvasRenderingContext2D) {
+    context.font = "24px Arial";
+    context.fillText(this.sticker, this.x, this.y);
+  }
+}
+
+class StickerPreview {
+  x: number;
+  y: number;
+  sticker: string;
+
+  constructor(x: number, y: number, sticker: string) {
+    this.x = x;
+    this.y = y;
+    this.sticker = sticker;
+  }
+
+  draw(context: CanvasRenderingContext2D) {
+    context.font = "24px Arial";
+    context.fillText(this.sticker, this.x, this.y);
+  }
+}
+
 let toolPreview: ToolPreview | null = null;
 
 function createStyledCanvas() {
@@ -86,42 +129,85 @@ function createStyledCanvas() {
   }
 
   let isDrawing = false;
-  let currentCanvas: DrawingCanvas | null = null;
   let redoStack: DrawingCanvas[] = [];
 
   let lineThickness = 2;
 
-  const lineThicknessHistory: number[] = [];
-
   const drawingChanged = new CustomEvent("drawing-changed");
+
+  let stickerPreview: StickerPreview | null = new StickerPreview(0, 0, "");
+
+  const stickerButton1 = document.createElement("button");
+  stickerButton1.innerText = "😀";
+  stickerButton1.addEventListener("click", () => {
+    stickerPreview = new StickerPreview(0, 0, "😀");
+    canvas.dispatchEvent(new Event("tool-moved"));
+  });
+
+  const stickerButton2 = document.createElement("button");
+  stickerButton2.innerText = "😩";
+  stickerButton2.addEventListener("click", () => {
+    stickerPreview = new StickerPreview(0, 0, "😩");
+    canvas.dispatchEvent(new Event("tool-moved"));
+  });
+
+  const stickerButton3 = document.createElement("button");
+  stickerButton3.innerText = "🫠";
+  stickerButton3.addEventListener("click", () => {
+    stickerPreview = new StickerPreview(0, 0, "🫠");
+    canvas.dispatchEvent(new Event("tool-moved"));
+  });
+
+  app.appendChild(stickerButton1);
+  app.appendChild(stickerButton2);
+  app.appendChild(stickerButton3);
+
+  if (stickerPreview) {
+    console.log(stickerPreview.sticker);
+  }
+
+  canvas.addEventListener("mousemove", (e) => {
+    if (!isDrawing) {
+      const x = e.clientX - canvas.offsetLeft;
+      const y = e.clientY - canvas.offsetTop;
+
+      if (toolPreview) {
+        toolPreview.x = x;
+        toolPreview.y = y;
+      }
+    }
+  });
+
+  let currentCanvas: DrawingCanvas | null = null;
 
   canvas.addEventListener("mousedown", (e) => {
     isDrawing = true;
-    currentCanvas = new DrawingCanvas(
-      e.clientX - canvas.offsetLeft,
-      e.clientY - canvas.offsetTop,
-      lineThickness
-    );
+    const x = e.clientX - canvas.offsetLeft;
+    const y = e.clientY - canvas.offsetTop;
+
+    currentCanvas = new DrawingCanvas(x, y, lineThickness);
     drawingCanvases.push(currentCanvas);
-    lineThicknessHistory.push(lineThickness);
+    currentCanvas.addPoint(x, y);
     canvas.dispatchEvent(drawingChanged);
   });
 
   canvas.addEventListener("mousemove", (e) => {
-    if (!isDrawing || !currentCanvas) return;
-    currentCanvas.addPoint(
-      e.clientX - canvas.offsetLeft,
-      e.clientY - canvas.offsetTop
-    );
-    canvas.dispatchEvent(drawingChanged);
+    if (isDrawing && currentCanvas) {
+      const x = e.clientX - canvas.offsetLeft;
+      const y = e.clientY - canvas.offsetTop;
+      currentCanvas.addPoint(x, y);
+      canvas.dispatchEvent(drawingChanged);
+    }
   });
 
   canvas.addEventListener("mouseup", () => {
     isDrawing = false;
+    currentCanvas = null;
   });
 
   canvas.addEventListener("mouseout", () => {
     isDrawing = false;
+    currentCanvas = null;
   });
 
   canvas.addEventListener("drawing-changed", () => {
@@ -147,18 +233,6 @@ function createStyledCanvas() {
     }
   });
 
-  canvas.addEventListener("mousedown", (e) => {
-    isDrawing = true;
-    currentCanvas = new DrawingCanvas(
-      e.clientX - canvas.offsetLeft,
-      e.clientY - canvas.offsetTop,
-      lineThickness
-    );
-    drawingCanvases.push(currentCanvas);
-    lineThicknessHistory.push(lineThickness);
-    canvas.dispatchEvent(drawingChanged);
-  });
-
   canvas.addEventListener("tool-moved", () => {
     if (!isDrawing) {
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -168,6 +242,10 @@ function createStyledCanvas() {
 
       if (toolPreview) {
         toolPreview.draw(context, lineThickness);
+      }
+
+      for (const sticker of currentCanvas?.stickers ?? []) {
+        sticker.draw(context);
       }
     }
   });
