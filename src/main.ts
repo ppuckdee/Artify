@@ -67,18 +67,21 @@ function createStyledCanvas() {
   let currentCanvas: DrawingCanvas | null = null;
   let redoStack: DrawingCanvas[] = [];
 
+  let lineThickness = 2;
+
+  const lineThicknessHistory: number[] = [];
+
   const drawingChanged = new CustomEvent("drawing-changed");
 
   canvas.addEventListener("mousedown", (e) => {
     isDrawing = true;
-    const thickness = currentCanvas ? currentCanvas.thickness : 2;
     currentCanvas = new DrawingCanvas(
       e.clientX - canvas.offsetLeft,
       e.clientY - canvas.offsetTop,
-      thickness
+      lineThickness
     );
     drawingCanvases.push(currentCanvas);
-    context.lineWidth = thickness;
+    lineThicknessHistory.push(lineThickness);
     canvas.dispatchEvent(drawingChanged);
   });
 
@@ -138,17 +141,13 @@ function createStyledCanvas() {
   const thinButton = document.createElement("button");
   thinButton.innerText = "Thin";
   thinButton.addEventListener("click", () => {
-    if (currentCanvas) {
-      currentCanvas.setThickness(1);
-    }
+    lineThickness = 1;
   });
 
   const thickButton = document.createElement("button");
   thickButton.innerText = "Thick";
   thickButton.addEventListener("click", () => {
-    if (currentCanvas) {
-      currentCanvas.setThickness(7);
-    }
+    lineThickness = 7;
   });
 
   app.appendChild(clearButton);
