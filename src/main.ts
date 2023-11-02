@@ -10,8 +10,6 @@ const header = document.createElement("h1");
 header.innerHTML = gameName;
 app.appendChild(header);
 
-let isEmojiStickerMode = false;
-
 class DrawingCanvas {
   points: { x: number; y: number }[];
   thickness: number;
@@ -43,7 +41,7 @@ class DrawingCanvas {
     }
     context.stroke();
 
-    this.stickers.forEach((sticker) => sticker.display(context));
+    this.stickers.forEach((sticker) => sticker.draw(context));
   }
 
   setThickness(thickness: number) {
@@ -93,7 +91,7 @@ class Sticker {
     this.sticker = sticker;
   }
 
-  display(context: CanvasRenderingContext2D) {
+  draw(context: CanvasRenderingContext2D) {
     context.font = "24px Arial";
     context.fillText(this.sticker, this.x, this.y);
   }
@@ -110,7 +108,7 @@ class StickerPreview {
     this.sticker = sticker;
   }
 
-  display(context: CanvasRenderingContext2D) {
+  draw(context: CanvasRenderingContext2D) {
     context.font = "24px Arial";
     context.fillText(this.sticker, this.x, this.y);
   }
@@ -148,39 +146,36 @@ function createStyledCanvas() {
   const stickerButton1 = document.createElement("button");
   stickerButton1.innerText = "😀";
   stickerButton1.addEventListener("click", () => {
-    isEmojiStickerMode = true;
     if (stickerPreview) {
       stickerPreview.sticker = "😀";
+      toolPreview = null;
     } else {
       stickerPreview = new StickerPreview(0, 0, "😀");
     }
     if (currentCanvas) {
       currentCanvas.setLineSymbol("😀");
     }
-    canvas.style.cursor = "pointer";
     canvas.dispatchEvent(new Event("tool-moved"));
   });
 
   const stickerButton2 = document.createElement("button");
   stickerButton2.innerText = "😩";
   stickerButton2.addEventListener("click", () => {
-    isEmojiStickerMode = true;
     if (stickerPreview) {
       stickerPreview.sticker = "😩";
+      toolPreview = null;
     } else {
       stickerPreview = new StickerPreview(0, 0, "😩");
     }
     if (currentCanvas) {
       currentCanvas.setLineSymbol("😩");
     }
-    canvas.style.cursor = "pointer";
     canvas.dispatchEvent(new Event("tool-moved"));
   });
 
   const stickerButton3 = document.createElement("button");
   stickerButton3.innerText = "🫠";
   stickerButton3.addEventListener("click", () => {
-    isEmojiStickerMode = true;
     if (stickerPreview) {
       stickerPreview.sticker = "🫠";
     } else {
@@ -189,7 +184,6 @@ function createStyledCanvas() {
     if (currentCanvas) {
       currentCanvas.setLineSymbol("🫠");
     }
-    canvas.style.cursor = "pointer";
     canvas.dispatchEvent(new Event("tool-moved"));
   });
 
@@ -247,16 +241,7 @@ function createStyledCanvas() {
   });
 
   canvas.addEventListener("mousemove", (e) => {
-    if (isEmojiStickerMode) {
-      const x = e.clientX - canvas.offsetLeft;
-      const y = e.clientY - canvas.offsetTop;
-      if (stickerPreview) {
-        stickerPreview.x = x;
-        stickerPreview.y = y;
-        canvas.style.cursor = "pointer";
-        canvas.dispatchEvent(new Event("tool-moved"));
-      }
-    } else if (!isDrawing) {
+    if (!isDrawing) {
       const x = e.clientX - canvas.offsetLeft;
       const y = e.clientY - canvas.offsetTop;
 
@@ -267,7 +252,6 @@ function createStyledCanvas() {
         toolPreview = new ToolPreview(x, y, lineThickness);
       }
 
-      canvas.style.cursor = "crosshair";
       canvas.dispatchEvent(new Event("tool-moved"));
     }
   });
@@ -278,7 +262,7 @@ function createStyledCanvas() {
     for (const canvasObj of drawingCanvases) {
       canvasObj.display(context);
       for (const sticker of canvasObj.stickers) {
-        sticker.display(context);
+        sticker.draw(context);
       }
     }
 
@@ -287,21 +271,16 @@ function createStyledCanvas() {
     }
 
     if (stickerPreview) {
-      stickerPreview.display(context);
+      stickerPreview.draw(context);
     }
   });
 
   canvas.addEventListener("click", (e) => {
-    if (isEmojiStickerMode) {
-      if (stickerPreview && currentCanvas) {
-        const x = e.clientX - canvas.offsetLeft;
-        const y = e.clientY - canvas.offsetTop;
-        currentCanvas.addSticker(x, y, stickerPreview.sticker);
-        canvas.style.cursor = "crosshair";
-        isEmojiStickerMode = false;
-        stickerPreview = null;
-        canvas.dispatchEvent(new Event("tool-moved"));
-      }
+    if (stickerPreview && currentCanvas) {
+      const x = e.clientX - canvas.offsetLeft;
+      const y = e.clientY - canvas.offsetTop;
+      currentCanvas.addSticker(x, y, stickerPreview.sticker);
+      canvas.dispatchEvent(new Event("tool-moved"));
     }
   });
 
