@@ -41,7 +41,7 @@ class DrawingCanvas {
     }
     context.stroke();
 
-    this.stickers.forEach((sticker) => sticker.draw(context));
+    this.stickers.forEach((sticker) => sticker.display(context));
   }
 
   setThickness(thickness: number) {
@@ -91,7 +91,7 @@ class Sticker {
     this.sticker = sticker;
   }
 
-  draw(context: CanvasRenderingContext2D) {
+  display(context: CanvasRenderingContext2D) {
     context.font = "24px Arial";
     context.fillText(this.sticker, this.x, this.y);
   }
@@ -108,7 +108,7 @@ class StickerPreview {
     this.sticker = sticker;
   }
 
-  draw(context: CanvasRenderingContext2D) {
+  display(context: CanvasRenderingContext2D) {
     context.font = "24px Arial";
     context.fillText(this.sticker, this.x, this.y);
   }
@@ -262,7 +262,7 @@ function createStyledCanvas() {
     for (const canvasObj of drawingCanvases) {
       canvasObj.display(context);
       for (const sticker of canvasObj.stickers) {
-        sticker.draw(context);
+        sticker.display(context);
       }
     }
 
@@ -271,7 +271,7 @@ function createStyledCanvas() {
     }
 
     if (stickerPreview) {
-      stickerPreview.draw(context);
+      stickerPreview.display(context);
     }
   });
 
