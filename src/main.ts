@@ -220,11 +220,9 @@ function createStyledCanvas() {
       currentCanvas = new DrawingCanvas(x, y, lineThickness);
       drawingCanvases.push(currentCanvas);
       currentCanvas.addPoint(x, y);
-    }
-
-    if (currentTool === "emoji" && stickerPreview && currentCanvas) {
+    } else if (currentTool === "emoji" && stickerPreview && currentCanvas) {
       currentCanvas.addSticker(x, y, stickerPreview.sticker);
-      canvas.dispatchEvent(new Event("tool-moved"));
+      currentCanvas.display(context);
     }
   });
 
@@ -330,6 +328,7 @@ function createStyledCanvas() {
   const thinButton = document.createElement("button");
   thinButton.innerText = "Thin";
   thinButton.addEventListener("click", () => {
+    switchTool("thin");
     lineThickness = 1;
     if (stickerPreview) {
       stickerPreview = null;
@@ -340,6 +339,7 @@ function createStyledCanvas() {
   const thickButton = document.createElement("button");
   thickButton.innerText = "Thick";
   thickButton.addEventListener("click", () => {
+    switchTool("thick");
     lineThickness = 7;
     if (stickerPreview) {
       stickerPreview = null;
