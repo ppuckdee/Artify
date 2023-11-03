@@ -115,6 +115,11 @@ class StickerPreview {
 }
 
 let toolPreview: ToolPreview | null = null;
+let currentTool = "drawing";
+
+function switchTool(tool: string) {
+  currentTool = tool;
+}
 
 function createStyledCanvas() {
   const canvas = document.createElement("canvas");
@@ -204,14 +209,22 @@ function createStyledCanvas() {
   let currentCanvas: DrawingCanvas | null = null;
 
   canvas.addEventListener("mousedown", (e) => {
-    isDrawing = true;
     const x = e.clientX - canvas.offsetLeft;
     const y = e.clientY - canvas.offsetTop;
 
-    currentCanvas = new DrawingCanvas(x, y, lineThickness);
-    drawingCanvases.push(currentCanvas);
-    currentCanvas.addPoint(x, y);
-    canvas.dispatchEvent(drawingChanged);
+    if (currentTool === "drawing") {
+      isDrawing = true;
+
+      currentCanvas = new DrawingCanvas(x, y, lineThickness);
+      drawingCanvases.push(currentCanvas);
+      currentCanvas.addPoint(x, y);
+      canvas.dispatchEvent(drawingChanged);
+    } else if (currentTool === "sticker") {
+      if (stickerPreview && currentCanvas) {
+        currentCanvas.addSticker(x, y, stickerPreview.sticker);
+        canvas.dispatchEvent(new Event("tool-moved"));
+      }
+    }
   });
 
   canvas.addEventListener("mousemove", (e) => {
