@@ -160,6 +160,7 @@ function createStyledCanvas() {
     if (currentCanvas) {
       currentCanvas.setLineSymbol("😀");
     }
+    switchTool("emoji");
     canvas.dispatchEvent(new Event("tool-moved"));
   });
 
@@ -175,6 +176,7 @@ function createStyledCanvas() {
     if (currentCanvas) {
       currentCanvas.setLineSymbol("😩");
     }
+    switchTool("emoji");
     canvas.dispatchEvent(new Event("tool-moved"));
   });
 
@@ -189,6 +191,7 @@ function createStyledCanvas() {
     if (currentCanvas) {
       currentCanvas.setLineSymbol("🫠");
     }
+    switchTool("emoji");
     canvas.dispatchEvent(new Event("tool-moved"));
   });
 
@@ -209,21 +212,19 @@ function createStyledCanvas() {
   let currentCanvas: DrawingCanvas | null = null;
 
   canvas.addEventListener("mousedown", (e) => {
+    isDrawing = true;
     const x = e.clientX - canvas.offsetLeft;
     const y = e.clientY - canvas.offsetTop;
 
     if (currentTool === "drawing") {
-      isDrawing = true;
-
       currentCanvas = new DrawingCanvas(x, y, lineThickness);
       drawingCanvases.push(currentCanvas);
       currentCanvas.addPoint(x, y);
-      canvas.dispatchEvent(drawingChanged);
-    } else if (currentTool === "sticker") {
-      if (stickerPreview && currentCanvas) {
-        currentCanvas.addSticker(x, y, stickerPreview.sticker);
-        canvas.dispatchEvent(new Event("tool-moved"));
-      }
+    }
+
+    if (currentTool === "emoji" && stickerPreview && currentCanvas) {
+      currentCanvas.addSticker(x, y, stickerPreview.sticker);
+      canvas.dispatchEvent(new Event("tool-moved"));
     }
   });
 
