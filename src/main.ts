@@ -1,9 +1,7 @@
 import "./style.css";
 
 const app: HTMLDivElement = document.querySelector("#app")!;
-
 const gameName = "Nick's drawing game";
-
 document.title = gameName;
 
 const header = document.createElement("h1");
@@ -119,6 +117,7 @@ let currentTool = "drawing";
 
 function switchTool(tool: string) {
   currentTool = tool;
+  if (toolPreview) toolPreview = null;
 }
 
 function createStyledCanvas() {
@@ -148,56 +147,67 @@ function createStyledCanvas() {
 
   let stickerPreview: StickerPreview | null = new StickerPreview(0, 0, "");
 
-  const stickerButton1 = document.createElement("button");
-  stickerButton1.innerText = "😀";
-  stickerButton1.addEventListener("click", () => {
-    if (stickerPreview) {
-      stickerPreview.sticker = "😀";
-      toolPreview = null;
-    } else {
-      stickerPreview = new StickerPreview(0, 0, "😀");
-    }
-    if (currentCanvas) {
-      currentCanvas.setLineSymbol("😀");
-    }
-    switchTool("emoji");
-    canvas.dispatchEvent(new Event("tool-moved"));
-  });
+  function createButton(text: string, clickHandler: () => void) {
+    const button = document.createElement("button");
+    button.innerText = text;
+    button.addEventListener("click", clickHandler);
+    return button;
+  }
 
-  const stickerButton2 = document.createElement("button");
-  stickerButton2.innerText = "😩";
-  stickerButton2.addEventListener("click", () => {
-    if (stickerPreview) {
-      stickerPreview.sticker = "😩";
-      toolPreview = null;
-    } else {
-      stickerPreview = new StickerPreview(0, 0, "😩");
-    }
-    if (currentCanvas) {
-      currentCanvas.setLineSymbol("😩");
-    }
-    switchTool("emoji");
-    canvas.dispatchEvent(new Event("tool-moved"));
-  });
+  function createStickerButton(emoji: string) {
+    const stickerButton = createButton(emoji, () => {
+      if (stickerPreview) {
+        stickerPreview.sticker = emoji;
+      } else {
+        stickerPreview = new StickerPreview(0, 0, emoji);
+      }
+      if (currentCanvas) {
+        currentCanvas.setLineSymbol(emoji);
+      }
+      switchTool("emoji");
+      canvas.dispatchEvent(new Event("tool-moved"));
+    });
+    app.appendChild(stickerButton);
+  }
 
-  const stickerButton3 = document.createElement("button");
-  stickerButton3.innerText = "🫠";
-  stickerButton3.addEventListener("click", () => {
-    if (stickerPreview) {
-      stickerPreview.sticker = "🫠";
-    } else {
-      stickerPreview = new StickerPreview(0, 0, "🫠");
-    }
-    if (currentCanvas) {
-      currentCanvas.setLineSymbol("🫠");
-    }
-    switchTool("emoji");
-    canvas.dispatchEvent(new Event("tool-moved"));
-  });
+  createStickerButton("😀");
+  createStickerButton("😩");
+  createStickerButton("🫠");
 
-  app.appendChild(stickerButton1);
-  app.appendChild(stickerButton2);
-  app.appendChild(stickerButton3);
+  app.appendChild(createButton("Clear", () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    drawingCanvases.length = 0;
+    redoStack = [];
+    canvas.dispatchEvent(drawingChanged);
+  }));
+
+  app.appendChild(createButton("Undo", () => {
+    if (drawingCanvases.length > 0) {
+      const lastDrawing = drawingCanvases.pop()!;
+      redoStack.push(lastDrawing);
+      canvas.dispatchEvent(drawingChanged);
+    }
+  }));
+
+  app.appendChild(createButton("Redo", () => {
+    if (redoStack.length > 0) {
+      const nextDrawing = redoStack.pop()!;
+      drawingCanvases.push(nextDrawing);
+      canvas.dispatchEvent(drawingChanged);
+    }
+  }));
+
+  app.appendChild(createButton("Thin", () => {
+    switchTool("thin");
+    lineThickness = 1;
+    canvas.dispatchEvent(new Event("tool-moved"));
+  }));
+
+  app.appendChild(createButton("Thick", () => {
+    switchTool("thick");
+    lineThickness = 7;
+    canvas.dispatchEvent(new Event("tool-moved"));
+  }));
 
   canvas.addEventListener("mousemove", (e) => {
     if (stickerPreview) {
@@ -295,63 +305,6 @@ function createStyledCanvas() {
       canvas.dispatchEvent(new Event("tool-moved"));
     }
   });
-
-  const clearButton = document.createElement("button");
-  clearButton.innerText = "Clear";
-  clearButton.addEventListener("click", () => {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    drawingCanvases.length = 0;
-    redoStack = [];
-    canvas.dispatchEvent(drawingChanged);
-  });
-
-  const undoButton = document.createElement("button");
-  undoButton.innerText = "Undo";
-  undoButton.addEventListener("click", () => {
-    if (drawingCanvases.length > 0) {
-      const lastDrawing = drawingCanvases.pop()!;
-      redoStack.push(lastDrawing);
-      canvas.dispatchEvent(drawingChanged);
-    }
-  });
-
-  const redoButton = document.createElement("button");
-  redoButton.innerText = "Redo";
-  redoButton.addEventListener("click", () => {
-    if (redoStack.length > 0) {
-      const nextDrawing = redoStack.pop()!;
-      drawingCanvases.push(nextDrawing);
-      canvas.dispatchEvent(drawingChanged);
-    }
-  });
-
-  const thinButton = document.createElement("button");
-  thinButton.innerText = "Thin";
-  thinButton.addEventListener("click", () => {
-    switchTool("thin");
-    lineThickness = 1;
-    if (stickerPreview) {
-      stickerPreview = null;
-    }
-    canvas.dispatchEvent(new Event("tool-moved"));
-  });
-
-  const thickButton = document.createElement("button");
-  thickButton.innerText = "Thick";
-  thickButton.addEventListener("click", () => {
-    switchTool("thick");
-    lineThickness = 7;
-    if (stickerPreview) {
-      stickerPreview = null;
-    }
-    canvas.dispatchEvent(new Event("tool-moved"));
-  });
-
-  app.appendChild(clearButton);
-  app.appendChild(undoButton);
-  app.appendChild(redoButton);
-  app.appendChild(thinButton);
-  app.appendChild(thickButton);
 }
 
 createStyledCanvas();
