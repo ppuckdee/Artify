@@ -56,7 +56,7 @@ class DrawingCanvas {
   }
 }
 
-const drawingCanvases: DrawingCanvas[] = [];
+const drawingCanvases: (DrawingCanvas | Sticker)[] = [];
 
 class ToolPreview {
   x: number;
@@ -139,9 +139,9 @@ function createStyledCanvas() {
   }
 
   let isDrawing = false;
-  let redoStack: DrawingCanvas[] = [];
+  let redoStack: (DrawingCanvas | Sticker) [] = [];
 
-  let lineThickness = 2;
+  let lineThickness = 10;
 
   const drawingChanged = new CustomEvent("drawing-changed");
 
@@ -198,15 +198,13 @@ function createStyledCanvas() {
   }));
 
   app.appendChild(createButton("Thin", () => {
-    switchTool("thin");
-    lineThickness = 1;
-    canvas.dispatchEvent(new Event("tool-moved"));
+    switchTool("drawing");
+    lineThickness = 2;
   }));
 
   app.appendChild(createButton("Thick", () => {
-    switchTool("thick");
+    switchTool("drawing");
     lineThickness = 7;
-    canvas.dispatchEvent(new Event("tool-moved"));
   }));
 
   canvas.addEventListener("mousemove", (e) => {
@@ -222,18 +220,19 @@ function createStyledCanvas() {
   let currentCanvas: DrawingCanvas | null = null;
 
   canvas.addEventListener("mousedown", (e) => {
-    isDrawing = true;
     const x = e.clientX - canvas.offsetLeft;
     const y = e.clientY - canvas.offsetTop;
 
     if (currentTool === "drawing") {
+      isDrawing = true;
       currentCanvas = new DrawingCanvas(x, y, lineThickness);
       drawingCanvases.push(currentCanvas);
       currentCanvas.addPoint(x, y);
-    } else if (currentTool === "emoji" && stickerPreview && currentCanvas) {
-      currentCanvas.addSticker(x, y, stickerPreview.sticker);
-      currentCanvas.display(context);
+    } else if (currentTool === "emoji") {
+      currentCanvas = new DrawingCanvas(x, y, lineThickness * 4);
+      drawingCanvases.push(currentCanvas);
     }
+    canvas.dispatchEvent(drawingChanged);
   });
 
   canvas.addEventListener("mousemove", (e) => {
@@ -283,9 +282,6 @@ function createStyledCanvas() {
 
     for (const canvasObj of drawingCanvases) {
       canvasObj.display(context);
-      for (const sticker of canvasObj.stickers) {
-        sticker.display(context);
-      }
     }
 
     if (toolPreview) {
