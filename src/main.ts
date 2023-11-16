@@ -283,14 +283,13 @@ function createStyledCanvas() {
       canvasObj.display(context);
     }
 
-    if (toolPreview) {
-      toolPreview.draw(context, lineThickness);
-    }
-
-    if (stickerPreview) {
+    if (currentTool === "drawing") {
+      if (toolPreview) {
+        toolPreview.draw(context, lineThickness);
+      }
+    } else if (stickerPreview) {
       stickerPreview.display(context);
     }
   });
 }
-
 createStyledCanvas();
