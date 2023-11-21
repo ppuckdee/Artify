@@ -107,6 +107,7 @@ const drawingCanvases: (DrawingCanvas | Sticker)[] = [];
 
 let toolPreview: ToolPreview | null = null;
 let currentTool = "drawing";
+let currentEmoji = "";
 
 function switchTool(tool: string) {
   currentTool = tool;
@@ -234,6 +235,35 @@ function createStyledCanvas() {
     })
   );
 
+  app.appendChild(
+    createButton("Export", () => {
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = 1024;
+      exportCanvas.height = 1024;
+
+      const exportContext = exportCanvas.getContext("2d");
+
+      if (!exportContext) {
+        console.error("Export canvas context is not available");
+        return;
+      }
+
+      exportContext.scale(4, 4);
+
+      for (const canvasObj of drawingCanvases) {
+        if (!(canvasObj instanceof ToolPreview)) {
+          canvasObj.display(exportContext);
+        }
+      }
+
+      const dataUrl = exportCanvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = "drawing.png";
+      a.click();
+    })
+  );
+
   canvas.addEventListener("mousemove", (e) => {
     if (stickerPreview) {
       const x = e.clientX - canvas.offsetLeft;
@@ -245,7 +275,6 @@ function createStyledCanvas() {
   });
 
   let currentCanvas: DrawingCanvas | Sticker | null = null;
-  let currentEmoji: string;
 
   canvas.addEventListener("mousedown", (e) => {
     const x = e.clientX - canvas.offsetLeft;
