@@ -8,15 +8,22 @@ const header = document.createElement("h1");
 header.innerHTML = gameName;
 app.appendChild(header);
 
+interface Point {
+  x: number;
+  y: number;
+}
+
 class DrawingCanvas {
-  points: { x: number; y: number }[];
+  points: Point[];
   thickness: number;
   lineSymbol: string;
+  lineColor: string;
 
-  constructor(x: number, y: number, thickness: number) {
+  constructor(x: number, y: number, thickness: number, color: string) {
     this.points = [{ x, y }];
     this.thickness = thickness;
     this.lineSymbol = "black";
+    this.lineColor = color;
   }
 
   addPoint(x: number, y: number) {
@@ -29,7 +36,7 @@ class DrawingCanvas {
     }
     context.lineWidth = this.thickness;
     context.lineCap = "round";
-    context.strokeStyle = this.lineSymbol;
+    context.strokeStyle = this.lineColor;
     context.beginPath();
     context.moveTo(this.points[0].x, this.points[0].y);
     for (let i = 1; i < this.points.length; i++) {
@@ -45,25 +52,35 @@ class DrawingCanvas {
   setLineSymbol(symbol: string) {
     this.lineSymbol = symbol;
   }
+
+  setLineColor(color: string) {
+    this.lineColor = color;
+  }
 }
 
 class ToolPreview {
   x: number;
   y: number;
   radius: number;
+  lineColor: string;
 
-  constructor(x: number, y: number, radius: number) {
+  constructor(x: number, y: number, radius: number, lineColor: string) {
     this.x = x;
     this.y = y;
     this.radius = radius;
+    this.lineColor = lineColor;
   }
 
   draw(context: CanvasRenderingContext2D, thickness: number) {
     context.lineWidth = thickness;
-    context.strokeStyle = "black";
+    context.strokeStyle = this.lineColor;
     context.beginPath();
     context.arc(this.x, this.y, thickness / 2, 0, Math.PI * 2);
     context.stroke();
+  }
+
+  setLineColor(color: string) {
+    this.lineColor = color;
   }
 }
 
@@ -71,16 +88,23 @@ class Sticker {
   x: number;
   y: number;
   sticker: string;
+  lineColor: string;
 
   constructor(x: number, y: number, sticker: string) {
     this.x = x;
     this.y = y;
     this.sticker = sticker;
+    this.lineColor = "black";
   }
 
   display(context: CanvasRenderingContext2D) {
     context.font = "24px Arial";
+    context.fillStyle = this.lineColor;
     context.fillText(this.sticker, this.x, this.y);
+  }
+
+  setLineColor(color: string) {
+    this.lineColor = color;
   }
 }
 
@@ -88,16 +112,23 @@ class StickerPreview {
   x: number;
   y: number;
   sticker: string;
+  lineColor: string;
 
   constructor(x: number, y: number, sticker: string) {
     this.x = x;
     this.y = y;
     this.sticker = sticker;
+    this.lineColor = "black";
   }
 
   display(context: CanvasRenderingContext2D) {
     context.font = "24px Arial";
+    context.fillStyle = this.lineColor;
     context.fillText(this.sticker, this.x, this.y);
+  }
+
+  setLineColor(color: string) {
+    this.lineColor = color;
   }
 }
 
@@ -108,6 +139,7 @@ const drawingCanvases: (DrawingCanvas | Sticker)[] = [];
 let toolPreview: ToolPreview | null = null;
 let currentTool = "drawing";
 let currentEmoji = "";
+let currentLineColor = "black";
 
 function switchTool(tool: string) {
   currentTool = tool;
@@ -140,6 +172,7 @@ function createStyledCanvas() {
   const drawingChanged = new CustomEvent("drawing-changed");
 
   let stickerPreview: StickerPreview | null = new StickerPreview(0, 0, "");
+  stickerPreview.setLineColor(currentLineColor);
 
   function createButton(text: string, clickHandler: () => void) {
     const button = document.createElement("button");
@@ -153,8 +186,10 @@ function createStyledCanvas() {
       currentEmoji = sticker;
       if (stickerPreview) {
         stickerPreview.sticker = currentEmoji;
+        stickerPreview.setLineColor(currentLineColor);
       } else {
         stickerPreview = new StickerPreview(0, 0, currentEmoji);
+        stickerPreview.setLineColor(currentLineColor);
       }
       currentTool = "emoji";
       canvas.dispatchEvent(new Event("tool-moved"));
@@ -175,8 +210,10 @@ function createStyledCanvas() {
           currentEmoji = trimmedStickerText;
           if (stickerPreview) {
             stickerPreview.sticker = currentEmoji;
+            stickerPreview.setLineColor(currentLineColor);
           } else {
             stickerPreview = new StickerPreview(0, 0, currentEmoji);
+            stickerPreview.setLineColor(currentLineColor);
           }
 
           currentTool = "emoji";
@@ -191,6 +228,19 @@ function createStyledCanvas() {
   initialStickers.forEach(createStickerButton);
 
   createCustomStickerButton();
+
+  const lineColorPicker = document.createElement("input");
+  lineColorPicker.type = "color";
+  lineColorPicker.value = currentLineColor;
+  lineColorPicker.addEventListener("change", (e) => {
+    currentLineColor = (e.target as HTMLInputElement).value;
+    if (currentTool === "drawing") {
+      if (toolPreview) toolPreview.setLineColor(currentLineColor);
+    } else if (stickerPreview) {
+      stickerPreview.setLineColor(currentLineColor);
+    }
+  });
+  app.appendChild(lineColorPicker);
 
   app.appendChild(
     createButton("Clear", () => {
@@ -266,8 +316,8 @@ function createStyledCanvas() {
 
   canvas.addEventListener("mousemove", (e) => {
     if (stickerPreview) {
-      const x = e.clientX - canvas.offsetLeft;
-      const y = e.clientY - canvas.offsetTop;
+      const x = e.offsetX;
+      const y = e.offsetY;
       stickerPreview.x = x;
       stickerPreview.y = y;
       canvas.dispatchEvent(new Event("tool-moved"));
@@ -277,15 +327,16 @@ function createStyledCanvas() {
   let currentCanvas: DrawingCanvas | Sticker | null = null;
 
   canvas.addEventListener("mousedown", (e) => {
-    const x = e.clientX - canvas.offsetLeft;
-    const y = e.clientY - canvas.offsetTop;
+    const x = e.offsetX;
+    const y = e.offsetY;
 
     if (currentTool === "drawing") {
       isDrawing = true;
-      currentCanvas = new DrawingCanvas(x, y, lineThickness);
+      currentCanvas = new DrawingCanvas(x, y, lineThickness, currentLineColor);
       currentCanvas.addPoint(x, y);
     } else {
       currentCanvas = new Sticker(x, y, currentEmoji);
+      currentCanvas.setLineColor(currentLineColor);
     }
     drawingCanvases.push(currentCanvas);
     canvas.dispatchEvent(drawingChanged);
@@ -293,8 +344,8 @@ function createStyledCanvas() {
 
   canvas.addEventListener("mousemove", (e) => {
     if (isDrawing && currentCanvas instanceof DrawingCanvas) {
-      const x = e.clientX - canvas.offsetLeft;
-      const y = e.clientY - canvas.offsetTop;
+      const x = e.offsetX;
+      const y = e.offsetY;
       currentCanvas.addPoint(x, y);
       canvas.dispatchEvent(drawingChanged);
     }
@@ -319,14 +370,14 @@ function createStyledCanvas() {
 
   canvas.addEventListener("mousemove", (e) => {
     if (!isDrawing) {
-      const x = e.clientX - canvas.offsetLeft;
-      const y = e.clientY - canvas.offsetTop;
+      const x = e.offsetX;
+      const y = e.offsetY;
 
       if (toolPreview) {
         toolPreview.x = x;
         toolPreview.y = y;
       } else {
-        toolPreview = new ToolPreview(x, y, lineThickness);
+        toolPreview = new ToolPreview(x, y, lineThickness, currentLineColor);
       }
 
       canvas.dispatchEvent(new Event("tool-moved"));
