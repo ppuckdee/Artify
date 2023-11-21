@@ -47,8 +47,6 @@ class DrawingCanvas {
   }
 }
 
-const drawingCanvases: (DrawingCanvas | Sticker)[] = [];
-
 class ToolPreview {
   x: number;
   y: number;
@@ -103,6 +101,10 @@ class StickerPreview {
   }
 }
 
+const initialStickers = ["😀", "😩", "🫠"];
+
+const drawingCanvases: (DrawingCanvas | Sticker)[] = [];
+
 let toolPreview: ToolPreview | null = null;
 let currentTool = "drawing";
 
@@ -145,23 +147,47 @@ function createStyledCanvas() {
     return button;
   }
 
-  function createStickerButton(emoji: string) {
-    const stickerButton = createButton(emoji, () => {
+  function createStickerButton(sticker: string) {
+    const stickerButton = createButton(sticker, () => {
       if (stickerPreview) {
-        stickerPreview.sticker = emoji;
+        stickerPreview.sticker = sticker;
       } else {
-        stickerPreview = new StickerPreview(0, 0, emoji);
+        stickerPreview = new StickerPreview(0, 0, sticker);
       }
-      currentEmoji = emoji;
-      switchTool("emoji");
+      currentTool = "emoji";
       canvas.dispatchEvent(new Event("tool-moved"));
     });
     app.appendChild(stickerButton);
   }
 
-  createStickerButton("😀");
-  createStickerButton("😩");
-  createStickerButton("🫠");
+  function createCustomStickerButton() {
+    const customStickerButton = createButton("Custom Sticker", () => {
+      const stickerText = prompt(
+        "Enter text for the custom sticker:",
+        "New Sticker"
+      );
+
+      if (stickerText !== null) {
+        const trimmedStickerText = stickerText.trim();
+        if (trimmedStickerText !== "") {
+          if (stickerPreview) {
+            stickerPreview.sticker = trimmedStickerText;
+          } else {
+            stickerPreview = new StickerPreview(0, 0, trimmedStickerText);
+          }
+
+          currentTool = "emoji";
+          canvas.dispatchEvent(new Event("tool-moved"));
+        }
+      }
+    });
+
+    app.appendChild(customStickerButton);
+  }
+
+  initialStickers.forEach(createStickerButton);
+
+  createCustomStickerButton();
 
   app.appendChild(
     createButton("Clear", () => {
@@ -292,4 +318,5 @@ function createStyledCanvas() {
     }
   });
 }
+
 createStyledCanvas();
