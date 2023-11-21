@@ -171,10 +171,11 @@ function createStyledCanvas() {
       if (stickerText !== null) {
         const trimmedStickerText = stickerText.trim();
         if (trimmedStickerText !== "") {
+          currentEmoji = trimmedStickerText;
           if (stickerPreview) {
-            stickerPreview.sticker = trimmedStickerText;
+            stickerPreview.sticker = currentEmoji;
           } else {
-            stickerPreview = new StickerPreview(0, 0, trimmedStickerText);
+            stickerPreview = new StickerPreview(0, 0, currentEmoji);
           }
 
           currentTool = "emoji";
