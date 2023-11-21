@@ -149,10 +149,11 @@ function createStyledCanvas() {
 
   function createStickerButton(sticker: string) {
     const stickerButton = createButton(sticker, () => {
+      currentEmoji = sticker;
       if (stickerPreview) {
-        stickerPreview.sticker = sticker;
+        stickerPreview.sticker = currentEmoji;
       } else {
-        stickerPreview = new StickerPreview(0, 0, sticker);
+        stickerPreview = new StickerPreview(0, 0, currentEmoji);
       }
       currentTool = "emoji";
       canvas.dispatchEvent(new Event("tool-moved"));
