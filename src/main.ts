@@ -101,7 +101,7 @@ class StickerPreview {
   }
 }
 
-const initialStickers = ["😀", "😩", "🫠"];
+const initialStickers = ["🥸", "😁", "🥳"];
 
 const drawingCanvases: (DrawingCanvas | Sticker)[] = [];
 
@@ -231,7 +231,7 @@ function createStyledCanvas() {
   app.appendChild(
     createButton("Thick", () => {
       switchTool("drawing");
-      lineThickness = 7;
+      lineThickness = 12;
     })
   );
 
