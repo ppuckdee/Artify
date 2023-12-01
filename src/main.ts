@@ -207,20 +207,7 @@ function createStyledCanvas() {
       if (stickerText !== null) {
         const trimmedStickerText = stickerText.trim();
         if (trimmedStickerText !== "") {
-          const newStickerPreview = new StickerPreview(
-            0,
-            0,
-            trimmedStickerText
-          );
-          newStickerPreview.setLineColor(currentLineColor);
-
-          const newStickerButton = createButton(trimmedStickerText, () => {
-            currentEmoji = trimmedStickerText;
-            currentTool = "emoji";
-            canvas.dispatchEvent(new Event("tool-moved"));
-          });
-
-          app.insertBefore(newStickerButton, customStickerButton);
+          createStickerButton(trimmedStickerText);
           initialStickers.push(trimmedStickerText);
         }
       }
