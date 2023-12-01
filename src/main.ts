@@ -207,17 +207,21 @@ function createStyledCanvas() {
       if (stickerText !== null) {
         const trimmedStickerText = stickerText.trim();
         if (trimmedStickerText !== "") {
-          currentEmoji = trimmedStickerText;
-          if (stickerPreview) {
-            stickerPreview.sticker = currentEmoji;
-            stickerPreview.setLineColor(currentLineColor);
-          } else {
-            stickerPreview = new StickerPreview(0, 0, currentEmoji);
-            stickerPreview.setLineColor(currentLineColor);
-          }
+          const newStickerPreview = new StickerPreview(
+            0,
+            0,
+            trimmedStickerText
+          );
+          newStickerPreview.setLineColor(currentLineColor);
 
-          currentTool = "emoji";
-          canvas.dispatchEvent(new Event("tool-moved"));
+          const newStickerButton = createButton(trimmedStickerText, () => {
+            currentEmoji = trimmedStickerText;
+            currentTool = "emoji";
+            canvas.dispatchEvent(new Event("tool-moved"));
+          });
+
+          app.insertBefore(newStickerButton, customStickerButton);
+          initialStickers.push(trimmedStickerText);
         }
       }
     });
