@@ -2,7 +2,7 @@
 
 ## Description
 
-Illustration App Demo is a lightweight web application designed for creating simple digital illustrations. This app allows users to draw with their mouse, place emojis as stickers, and customize their artwork with different colors and line thicknesses. The intuitive interface makes it accessible for users of all ages and skill levels, fostering creativity and digital art skills.
+Illustration App Demo is a lightweight web application designed for creating simple digital illustrations. This app allows users to draw with their mouse, place emojis as stickers, and customize their artwork with different colors and line thicknesses. The interface makes it accessible for users of all ages and skill levels, fostering creativity and digital art skills.
 
 ## Features
 
