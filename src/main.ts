@@ -148,8 +148,8 @@ function switchTool(tool: string) {
 
 function createStyledCanvas() {
   const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 256;
+  canvas.width = 750;
+  canvas.height = 512;
 
   canvas.style.border = "1px solid black";
   canvas.style.borderRadius = "10px";
@@ -173,6 +173,14 @@ function createStyledCanvas() {
 
   let stickerPreview: StickerPreview | null = new StickerPreview(0, 0, "");
   stickerPreview.setLineColor(currentLineColor);
+
+  const buttonContainer = document.createElement("div");
+  buttonContainer.style.display = "flex";
+  buttonContainer.style.flexWrap = "wrap";
+  buttonContainer.style.gap = "10px";
+  buttonContainer.style.marginBottom = "20px";
+
+  app.appendChild(buttonContainer);
 
   function createButton(text: string, clickHandler: () => void) {
     const button = document.createElement("button");
