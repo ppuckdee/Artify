@@ -26,7 +26,3 @@ Upon launching the app, you are presented with a blank canvas where you can star
 - **Undo/Redo:** Use the "Undo" and "Redo" buttons to correct any mistakes or changes.
 - **Clearing Canvas:** Click the "Clear" button to start a new illustration.
 
-## Customization
-
-The app comes with a default set of tools and options, but developers can easily extend or modify its features by editing the source code. Custom stickers, additional drawing tools, or UI themes can be added to enhance the user experience.
-
