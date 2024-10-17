@@ -4,7 +4,7 @@ https://ppuckdee.github.io/Illustration-App-Demo/
 
 ## Description
 
-Illustration App Demo is a lightweight web application designed for creating simple digital illustrations. This app allows users to draw with their mouse, place emojis as stickers, and customize their artwork with different colors and line thicknesses. The interface makes it accessible for users of all ages and skill levels, fostering creativity and digital art skills.
+Artify is a lightweight web application designed to inspire creativity in children through digital illustration. With a simple, intuitive interface, kids can easily draw using their mouse, add playful emoji stickers, and personalize their artwork with a variety of colors and line thickness options. The app is designed to be accessible to children of all ages and skill levels, encouraging them to explore their creativity while building foundational digital art skills in a fun, engaging environment.
 
 ## Features
 
