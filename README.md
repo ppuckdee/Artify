@@ -1,6 +1,6 @@
 # Artify App
 ## Link
-[https://ppuckdee.github.io/Illustration-App-Demo/](https://ppuckdee.github.io/Artify/)
+[Artify](https://ppuckdee.github.io/Artify/)
 
 ## Description
 
