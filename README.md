@@ -4,7 +4,7 @@
 
 ## Description
 
-Artify is a lightweight web application designed to inspire creativity in children through digital illustration. Started as a student project, Artify allows kids to easily draw using their mouse, add playful emoji stickers, and personalize their artwork with a variety of colors and line thickness options. The simple, intuitive interface is accessible to children of all ages and skill levels, encouraging them to explore their creativity while building foundational digital art skills in a fun, mind engaging environment.
+Artify is a lightweight web application designed to inspire creativity in children through digital illustration. Started off as a student project, Artify allows kids to easily draw using their mouse, add playful emoji stickers, and personalize their artwork with a variety of colors and line thickness options. The simple, intuitive interface is accessible to children of all ages and skill levels, encouraging them to explore their creativity while building foundational digital art skills in a fun, mind engaging environment.
 
 ## Features
 
