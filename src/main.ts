@@ -1,7 +1,7 @@
 import "./style.css";
 
 const app: HTMLDivElement = document.querySelector("#app")!;
-const gameName = "Illustration App Demo";
+const gameName = "Artify";
 document.title = gameName;
 
 const header = document.createElement("h1");
