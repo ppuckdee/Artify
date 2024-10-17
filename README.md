@@ -1,10 +1,10 @@
-# Illustration App Demo
+# Artify App
 ## Link
-https://ppuckdee.github.io/Illustration-App-Demo/
+[https://ppuckdee.github.io/Illustration-App-Demo/](https://ppuckdee.github.io/Artify/)
 
 ## Description
 
-Artify is a lightweight web application designed to inspire creativity in children through digital illustration. With a simple, intuitive interface, kids can easily draw using their mouse, add playful emoji stickers, and personalize their artwork with a variety of colors and line thickness options. The app is designed to be accessible to children of all ages and skill levels, encouraging them to explore their creativity while building foundational digital art skills in a fun, engaging environment.
+Artify is a lightweight web application designed to inspire creativity in children through digital illustration. Started as a student project, Artify allows kids to easily draw using their mouse, add playful emoji stickers, and personalize their artwork with a variety of colors and line thickness options. The simple, intuitive interface is accessible to children of all ages and skill levels, encouraging them to explore their creativity while building foundational digital art skills in a fun, mind engaging environment.
 
 ## Features
 
